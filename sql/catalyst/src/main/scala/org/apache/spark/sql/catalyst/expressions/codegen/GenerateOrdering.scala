@@ -154,12 +154,19 @@ class LazilyGeneratedOrdering(val ordering: Seq[SortOrder]) extends Ordering[Int
   private[this] var generatedOrdering = GenerateOrdering.generate(ordering)
 
   def compare(a: InternalRow, b: InternalRow): Int = {
+    setupOrdering
     generatedOrdering.compare(a, b)
   }
 
   private def readObject(in: ObjectInputStream): Unit = Utils.tryOrIOException {
     in.defaultReadObject()
-    generatedOrdering = GenerateOrdering.generate(ordering)
+    setupOrdering
+  }
+
+  private def setupOrdering: Unit = {
+    if (generatedOrdering == null) {
+      generatedOrdering = GenerateOrdering.generate(ordering)
+    }
   }
 }
 
